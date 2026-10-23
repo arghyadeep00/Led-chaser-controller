@@ -12,6 +12,18 @@ const server = app.listen(config.PORT, () => {
   console.log('====================================================');
 });
 
+// Handle port collision gracefully
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n[FATAL] Port ${config.PORT} is already in use by another process.`);
+    console.error(`Free port ${config.PORT} with: sudo fuser -k ${config.PORT}/tcp`);
+    console.error(`Or start on a different port: PORT=${config.PORT + 1} npm start\n`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
+});
+
 // Graceful shutdown
 function shutdown(signal) {
   console.log(`\nReceived ${signal}. Gracefully stopping server...`);
