@@ -17,6 +17,8 @@ const simulatorRoutes = require('./routes/simulator');
 const app = express();
 
 // Security headers with CSP tailored for local assets & dashboard charts
+const isHttps = process.env.ENABLE_HTTPS === 'true' || process.env.USE_SSL === 'true';
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -26,9 +28,11 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"]
+        connectSrc: ["'self'"],
+        upgradeInsecureRequests: isHttps ? [] : null
       }
     },
+    hsts: isHttps ? undefined : false,
     crossOriginEmbedderPolicy: false
   })
 );
