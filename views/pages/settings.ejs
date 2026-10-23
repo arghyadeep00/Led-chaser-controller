@@ -1,0 +1,301 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">Device Settings & Integration</h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">Configure hardware identifier, polling timers, and review firmware integration guide</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <button id="test-connection-btn" class="btn-primary text-xs">
+        <i data-lucide="radio" class="w-4 h-4"></i>
+        Test Device Connection
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: Settings Form (7 cols) -->
+    <div class="card p-6 lg:col-span-7 space-y-6">
+      <div class="flex items-center justify-between pb-3 border-b border-navy-700/60">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-navy-900 border border-navy-700 text-accent">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Device Configuration</h3>
+            <p class="text-xs text-slate-400">Node parameters and hardware identification</p>
+          </div>
+        </div>
+      </div>
+
+      <form id="device-settings-form" class="space-y-4">
+        <!-- Device Name -->
+        <div>
+          <label for="device_name" class="block text-xs font-mono font-semibold uppercase text-slate-300 mb-1">
+            Friendly Device Name
+          </label>
+          <input 
+            type="text" 
+            id="device_name" 
+            name="device_name" 
+            value="<%= settings.device_name || 'ESP32 Living Room Chaser' %>" 
+            class="w-full bg-navy-950 border border-navy-700 rounded-lg px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-accent"
+          >
+        </div>
+
+        <!-- Device Identifier -->
+        <div>
+          <label for="device_id" class="block text-xs font-mono font-semibold uppercase text-slate-300 mb-1">
+            Hardware Device Identifier (ID / MAC)
+          </label>
+          <input 
+            type="text" 
+            id="device_id" 
+            name="device_id" 
+            value="<%= settings.device_id || 'ESP32_CHASER_01' %>" 
+            class="w-full bg-navy-950 border border-navy-700 rounded-lg px-3.5 py-2 text-sm text-slate-200 font-mono focus:outline-none focus:border-accent"
+          >
+          <p class="text-[11px] text-slate-500 mt-1">Unique identifier used by ESP32 in telemetry headers.</p>
+        </div>
+
+        <!-- Firmware Version Field -->
+        <div>
+          <label for="firmware_version" class="block text-xs font-mono font-semibold uppercase text-slate-300 mb-1">
+            Installed Firmware Version
+          </label>
+          <input 
+            type="text" 
+            id="firmware_version" 
+            name="firmware_version" 
+            value="<%= settings.firmware_version || 'v1.4.2-chaser' %>" 
+            class="w-full bg-navy-950 border border-navy-700 rounded-lg px-3.5 py-2 text-sm text-slate-200 font-mono focus:outline-none focus:border-accent"
+          >
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <!-- Polling Interval (Read-only/Info) -->
+          <div>
+            <label class="block text-xs font-mono font-semibold uppercase text-slate-400 mb-1">
+              Firmware Polling Interval
+            </label>
+            <div class="p-2.5 rounded-lg bg-navy-950 border border-navy-700/80 font-mono text-sm text-slate-300 flex items-center justify-between">
+              <span>1000 ms</span>
+              <span class="text-[10px] text-slate-500">1.0 Hz Poll</span>
+            </div>
+          </div>
+
+          <!-- Command Timeout (TTL) -->
+          <div>
+            <label class="block text-xs font-mono font-semibold uppercase text-slate-400 mb-1">
+              Command Expiration TTL
+            </label>
+            <div class="p-2.5 rounded-lg bg-navy-950 border border-navy-700/80 font-mono text-sm text-slate-300 flex items-center justify-between">
+              <span><%= device.commandTimeoutSeconds %> seconds</span>
+              <span class="text-[10px] text-slate-500">Queue Guard</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="pt-4 flex justify-end">
+          <button type="submit" id="save-settings-btn" class="btn-primary text-xs py-2.5 px-6">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            Update Device Settings
+          </button>
+        </div>
+      </form>
+
+      <!-- Development / Demo Mode Toggle Box -->
+      <div class="pt-6 border-t border-navy-700/60">
+        <div class="p-4 rounded-xl bg-navy-950 border border-navy-700/80 flex items-center justify-between">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-white">Built-in ESP32 Simulator (Demo Mode)</span>
+              <span class="badge <%= (device && device.isSimulated) ? 'badge-info' : 'badge-neutral' %> text-[10px]">
+                <%= (device && device.isSimulated) ? 'Running' : 'Standby' %>
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 max-w-md">
+              Enables an in-memory virtual microcontroller that polls <code>/api/device/command</code>, simulates LED pattern frames, and sends acknowledgements.
+            </p>
+          </div>
+
+          <button id="toggle-simulator-card-btn" class="btn-secondary text-xs">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span><%= (device && device.isSimulated) ? 'Deactivate' : 'Activate' %></span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Telemetry Overview & Endpoints (5 cols) -->
+    <div class="space-y-6 lg:col-span-5">
+
+      <!-- Endpoint Configuration Info Card -->
+      <div class="card p-6 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-navy-700/60">
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="network" class="w-4 h-4 text-accent"></i>
+            API Endpoints for ESP32
+          </h3>
+          <span class="text-[11px] font-mono text-slate-400">REST JSON</span>
+        </div>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div>
+            <span class="text-[10px] uppercase text-slate-500 block">Command Polling Endpoint (GET)</span>
+            <code class="block mt-1 p-2 rounded bg-navy-950 border border-navy-800 text-accent break-all">
+              GET /api/device/command
+            </code>
+          </div>
+
+          <div>
+            <span class="text-[10px] uppercase text-slate-500 block">Command Acknowledgement (POST)</span>
+            <code class="block mt-1 p-2 rounded bg-navy-950 border border-navy-800 text-accent break-all">
+              POST /api/device/ack
+            </code>
+          </div>
+
+          <div>
+            <span class="text-[10px] uppercase text-slate-500 block">Telemetry / Heartbeat (POST)</span>
+            <code class="block mt-1 p-2 rounded bg-navy-950 border border-navy-800 text-accent break-all">
+              POST /api/device/heartbeat
+            </code>
+          </div>
+
+          <div>
+            <span class="text-[10px] uppercase text-slate-500 block">Header Authentication (Configurable)</span>
+            <code class="block mt-1 p-2 rounded bg-navy-950 border border-navy-800 text-slate-400 break-all">
+              X-API-Key: &bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull; (Hidden)
+            </code>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-navy-950/60 border border-navy-700/60 text-[11px] text-slate-400">
+          <strong class="text-white">Security:</strong> Secret keys and Wi-Fi credentials are kept strictly in backend environment variables (<code>.env</code>) and are never leaked to frontend markup or browser logs.
+        </div>
+      </div>
+
+      <!-- Hardware Bus Pinout Card -->
+      <div class="card p-6 space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-navy-700/60">
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-secondary"></i>
+            Hardware Pinout
+          </h3>
+          <span class="text-[11px] font-mono text-slate-400">GPIO</span>
+        </div>
+
+        <div class="grid grid-cols-5 gap-2 text-center font-mono text-xs">
+          <% gpioMap.forEach(g => { %>
+            <div class="p-2 rounded bg-navy-950 border border-navy-800">
+              <span class="text-[10px] text-slate-500 block"><%= g.label %></span>
+              <strong class="text-accent text-sm">GPIO <%= g.pin %></strong>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Firmware Integration Guide (Accordion / Detailed Documentation) -->
+  <div class="card p-6 space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-navy-700/60">
+      <div class="flex items-center gap-2.5">
+        <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <i data-lucide="code" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white">ESP32 Firmware Integration Guide</h3>
+          <p class="text-xs text-slate-400">C++ / Arduino example for autonomous offline operation, polling, and acknowledgement</p>
+        </div>
+      </div>
+      <span class="badge badge-success text-xs">Firmware Ready</span>
+    </div>
+
+    <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+      <p>
+        To ensure your ESP32 maintains 100% lighting continuity even when Wi-Fi drops or the server is rebooted, the LED animation loop must use non-blocking timers (<code class="text-accent font-mono">millis()</code>) rather than blocking delays.
+      </p>
+
+      <div class="relative">
+        <pre class="p-4 rounded-xl bg-navy-950 border border-navy-800 font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed"><code>// GlowControl ESP32 Lighting Firmware Integration Snippet
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+
+const int LED_PINS[5] = {16, 17, 18, 19, 21};
+const char* serverUrl = "http://&lt;SERVER_IP&gt;:3000/api/device/command";
+const char* ackUrl    = "http://&lt;SERVER_IP&gt;:3000/api/device/ack";
+const char* apiKey    = "esp32_glow_secret_key_9281"; // In production
+
+String lastCommandId = "";
+unsigned long lastPoll = 0;
+const unsigned long POLL_INTERVAL = 1000; // Poll every 1s
+
+void setup() {
+  Serial.begin(115200);
+  for (int i = 0; i &lt; 5; i++) {
+    pinMode(LED_PINS[i], OUTPUT);
+    digitalWrite(LED_PINS[i], LOW);
+  }
+  // Connect to Wi-Fi non-blockingly or with timeout
+}
+
+void loop() {
+  // 1. RUN LOCAL LED EFFECT (AUTONOMOUS - ZERO NETWORK BLOCKING)
+  stepCurrentEffectLocally(); 
+
+  // 2. POLL SERVER FOR PENDING COMMANDS EVERY 1000ms
+  if (WiFi.status() == WL_CONNECTED && millis() - lastPoll &gt;= POLL_INTERVAL) {
+    lastPoll = millis();
+    pollServer();
+  }
+}
+
+void pollServer() {
+  HTTPClient http;
+  http.begin(serverUrl);
+  http.addHeader("X-API-Key", apiKey);
+  int httpCode = http.GET();
+  
+  if (httpCode == 200) {
+    String payload = http.getString();
+    StaticJsonDocument&lt;256&gt; doc;
+    DeserializationError error = deserializeJson(doc, payload);
+    
+    if (!error && doc.containsKey("id") && !doc["id"].isNull()) {
+      String id = doc["id"].as&lt;String&gt;();
+      String cmd = doc["command"].as&lt;String&gt;();
+      int val = doc["value"] | 0;
+
+      if (id != lastCommandId) {
+        lastCommandId = id;
+        executeCommandLocally(cmd, val);
+        sendAcknowledgement(id, "executed");
+      }
+    }
+  }
+  http.end();
+}
+
+void sendAcknowledgement(String cmdId, String status) {
+  HTTPClient http;
+  http.begin(ackUrl);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-API-Key", apiKey);
+  String body = "{\"id\":\"" + cmdId + "\",\"status\":\"" + status + "\"}";
+  http.POST(body);
+  http.end();
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+</div>

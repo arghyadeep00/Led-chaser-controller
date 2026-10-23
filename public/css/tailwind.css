@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-accent selection:text-navy-950;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0B1120;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-navy-800 border border-navy-700/70 rounded-xl shadow-card transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply hover:border-navy-600 hover:shadow-lg;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-navy-950 font-semibold hover:bg-accent-hover transition-colors shadow-glow-cyan focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-navy-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-navy-700 hover:bg-navy-600 text-slate-200 font-medium transition-colors border border-navy-600/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-navy-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 focus:ring-offset-navy-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .btn-purple {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-secondary text-white font-medium hover:bg-secondary-hover transition-colors shadow-glow-purple focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-navy-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border;
+  }
+
+  .badge-success {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/30;
+  }
+
+  .badge-warning {
+    @apply bg-amber-500/10 text-amber-400 border-amber-500/30;
+  }
+
+  .badge-error {
+    @apply bg-rose-500/10 text-rose-400 border-rose-500/30;
+  }
+
+  .badge-info {
+    @apply bg-sky-500/10 text-sky-400 border-sky-500/30;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-700/30 text-slate-400 border-slate-700;
+  }
+
+  .badge-purple {
+    @apply bg-purple-500/10 text-purple-400 border-purple-500/30;
+  }
+}
+
+/* 5-LED Visual Simulation Styles */
+.led-node {
+  @apply relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-navy-600 bg-navy-900 flex items-center justify-center font-mono text-xs font-bold transition-all duration-300;
+}
+
+.led-node.active-led {
+  @apply bg-accent border-accent text-navy-950;
+  box-shadow: 0 0 20px 4px rgba(56, 189, 248, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.led-node.active-purple {
+  @apply bg-secondary border-secondary text-white;
+  box-shadow: 0 0 20px 4px rgba(139, 92, 246, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.led-preview-dot {
+  @apply w-3 h-3 rounded-full bg-navy-700 transition-all duration-200;
+}
+
+.led-preview-dot.on {
+  @apply bg-accent;
+  box-shadow: 0 0 8px 1px rgba(56, 189, 248, 0.8);
+}

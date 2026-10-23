@@ -1,0 +1,89 @@
+<%
+  const navItems = [
+    { id: 'overview', label: 'Overview', href: '/', icon: 'layout-dashboard' },
+    { id: 'controller', label: 'LED Controller', href: '/controller', icon: 'sliders-horizontal' },
+    { id: 'effects', label: 'Effects Library', href: '/effects', icon: 'sparkles', badge: '50' },
+    { id: 'automation', label: 'Automation', href: '/automation', icon: 'clock' },
+    { id: 'history', label: 'Command History', href: '/history', icon: 'history' },
+    { id: 'settings', label: 'Device Settings', href: '/settings', icon: 'settings' }
+  ];
+%>
+
+<aside id="sidebar-nav" class="fixed inset-y-0 left-0 z-40 w-64 bg-navy-900 border-r border-navy-700/70 flex flex-col transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0">
+  <!-- Sidebar Header -->
+  <div class="h-16 px-6 border-b border-navy-700/60 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-secondary flex items-center justify-center shadow-glow-cyan">
+        <i data-lucide="sparkles" class="w-4 h-4 text-navy-950"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-white tracking-tight">GlowControl</h1>
+        <p class="text-[10px] text-slate-400 font-mono">ESP32 5-LED Bus</p>
+      </div>
+    </a>
+    <button id="close-sidebar-btn" class="lg:hidden text-slate-400 hover:text-white" aria-label="Close sidebar">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Links -->
+  <div class="flex-1 px-4 py-6 overflow-y-auto space-y-1">
+    <div class="px-3 mb-2 text-[10px] uppercase font-mono font-semibold tracking-wider text-slate-500">
+      Control Plane
+    </div>
+
+    <% navItems.forEach(item => { 
+      const isActive = currentPage === item.id;
+    %>
+      <a 
+        href="<%= item.href %>" 
+        class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group <%= isActive ? 'bg-accent/15 text-accent border border-accent/30 shadow-sm' : 'text-slate-400 hover:text-slate-100 hover:bg-navy-800/80 border border-transparent' %>"
+      >
+        <div class="flex items-center gap-3">
+          <i data-lucide="<%= item.icon %>" class="w-4 h-4 transition-colors <%= isActive ? 'text-accent' : 'text-slate-400 group-hover:text-slate-200' %>"></i>
+          <span><%= item.label %></span>
+        </div>
+        <% if (item.badge) { %>
+          <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full <%= isActive ? 'bg-accent text-navy-950' : 'bg-navy-800 text-slate-400 border border-navy-700' %>">
+            <%= item.badge %>
+          </span>
+        <% } %>
+      </a>
+    <% }); %>
+
+    <div class="pt-6 px-3 mb-2 text-[10px] uppercase font-mono font-semibold tracking-wider text-slate-500">
+      System Telemetry
+    </div>
+
+    <!-- Compact System Info Box -->
+    <div class="p-3.5 rounded-xl bg-navy-950/70 border border-navy-700/50 space-y-2 text-xs">
+      <div class="flex items-center justify-between text-slate-400">
+        <span class="text-[11px]">Firmware</span>
+        <span class="font-mono text-slate-300 text-[11px]"><%= (device && device.firmwareVersion) || 'v1.4.2' %></span>
+      </div>
+      <div class="flex items-center justify-between text-slate-400">
+        <span class="text-[11px]">Hardware ID</span>
+        <span class="font-mono text-accent text-[11px] truncate max-w-[100px]" title="<%= (device && device.deviceId) || 'ESP32_CHASER_01' %>">
+          <%= (device && device.deviceId) || 'ESP32_CHASER_01' %>
+        </span>
+      </div>
+      <div class="flex items-center justify-between text-slate-400">
+        <span class="text-[11px]">Autonomy</span>
+        <span class="text-emerald-400 font-medium text-[11px] flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Offline-Safe
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="p-4 border-t border-navy-700/60 bg-navy-950/40">
+    <div class="flex items-center justify-between text-xs text-slate-500">
+      <span>GlowControl IoT</span>
+      <span class="font-mono text-[11px]">v1.0.0</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Backdrop overlay for mobile sidebar -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-30 hidden lg:hidden"></div>

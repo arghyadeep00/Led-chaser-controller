@@ -1,0 +1,15 @@
+<footer class="mt-auto py-6 px-6 border-t border-navy-700/60 bg-navy-950 text-slate-500 text-xs">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span class="text-slate-400 font-medium">GlowControl ESP32 Dashboard</span>
+      <span>&bull;</span>
+      <span>Autonomous 50-Effect Lighting Control</span>
+    </div>
+    <div class="flex items-center gap-6 font-mono text-[11px] text-slate-500">
+      <span>Pins: 16, 17, 18, 19, 21</span>
+      <span>Queue TTL: <%= (device && device.commandTimeoutSeconds) || 60 %>s</span>
+      <span class="text-slate-400">REST API: JSON</span>
+    </div>
+  </div>
+</footer>

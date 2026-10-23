@@ -1,0 +1,270 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">LED Controller</h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">Interactive remote console for ESP32 5-LED 50-effect lighting bus</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-mono px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-700 text-slate-300">
+        Active: <strong id="header-active-effect" class="text-accent font-semibold">#<%= (device && device.currentEffectId) || 1 %> <%= (device && device.currentEffectName) || 'Forward Chase' %></strong>
+      </span>
+    </div>
+  </div>
+
+  <!-- Visual 5-LED Indicator Partial -->
+  <%- include('../partials/ledIndicator') %>
+
+  <!-- Main Controller Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Master State Buttons (lg:col-span-7) -->
+    <div class="card p-6 lg:col-span-7 flex flex-col justify-between space-y-6">
+      
+      <div>
+        <div class="flex items-center justify-between pb-3 mb-5 border-b border-navy-700/60">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 rounded-lg bg-navy-900 border border-navy-700 text-accent">
+              <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Hardware Control Panel</h3>
+              <p class="text-xs text-slate-400">Direct HTTP JSON command dispatch to ESP32 queue</p>
+            </div>
+          </div>
+          <span class="badge badge-info text-[11px]">Async Safe</span>
+        </div>
+
+        <!-- 1. Power / Master Output -->
+        <div class="mb-5">
+          <label class="block text-xs font-mono font-semibold uppercase text-slate-400 tracking-wider mb-2.5">
+            Master Illumination
+          </label>
+          <div class="grid grid-cols-2 gap-3">
+            <button 
+              id="btn-all-on" 
+              data-cmd="on" 
+              class="btn-secondary py-3 text-sm flex items-center justify-center gap-2 hover:border-amber-400/50 hover:text-amber-300 group"
+            >
+              <i data-lucide="sun" class="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform"></i>
+              <span>All LEDs ON</span>
+            </button>
+
+            <button 
+              id="btn-all-off" 
+              data-cmd="off" 
+              class="btn-secondary py-3 text-sm flex items-center justify-center gap-2 hover:border-rose-400/50 hover:text-rose-300 group"
+            >
+              <i data-lucide="moon" class="w-4 h-4 text-slate-400 group-hover:scale-110 transition-transform"></i>
+              <span>All LEDs OFF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Stepping & Reset Controls -->
+        <div class="mb-5">
+          <label class="block text-xs font-mono font-semibold uppercase text-slate-400 tracking-wider mb-2.5">
+            Effect Progression
+          </label>
+          <div class="grid grid-cols-3 gap-3">
+            <button 
+              id="btn-prev-effect" 
+              data-cmd="previous" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="skip-back" class="w-4 h-4 text-accent"></i>
+              <span>Previous Effect</span>
+            </button>
+
+            <button 
+              id="btn-reset-effect" 
+              data-cmd="reset" 
+              data-confirm="Are you sure you want to reset the controller back to Effect #1 (Forward Chase)?"
+              class="btn-danger py-2.5 text-xs flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span>Reset to #1</span>
+            </button>
+
+            <button 
+              id="btn-next-effect" 
+              data-cmd="next" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5"
+            >
+              <span>Next Effect</span>
+              <i data-lucide="skip-forward" class="w-4 h-4 text-accent"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Lock & Auto Mode Controls -->
+        <div>
+          <label class="block text-xs font-mono font-semibold uppercase text-slate-400 tracking-wider mb-2.5">
+            Pattern Lock & Automatic Mode
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button 
+              id="btn-lock-pattern" 
+              data-cmd="lock" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5 hover:border-purple-400/50 hover:text-purple-300"
+            >
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Lock Pattern</span>
+            </button>
+
+            <button 
+              id="btn-unlock-pattern" 
+              data-cmd="unlock" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5 hover:border-accent/50 hover:text-accent"
+            >
+              <i data-lucide="unlock" class="w-3.5 h-3.5 text-accent"></i>
+              <span>Unlock</span>
+            </button>
+
+            <button 
+              id="btn-enable-auto" 
+              data-cmd="auto_on" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5 hover:border-emerald-400/50 hover:text-emerald-300"
+            >
+              <i data-lucide="play-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Enable Auto</span>
+            </button>
+
+            <button 
+              id="btn-disable-auto" 
+              data-cmd="auto_off" 
+              class="btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5 hover:border-slate-500 hover:text-slate-200"
+            >
+              <i data-lucide="pause-circle" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>Disable Auto</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Command Delivery Information Note -->
+      <div class="p-3.5 rounded-lg bg-navy-900/60 border border-navy-700/50 flex items-center justify-between text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+          <span>Anti-double-click guard enabled. Buttons lock while dispatch is in-flight.</span>
+        </div>
+        <span class="font-mono text-[11px] text-slate-500">REST API</span>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Speed Control & Direct Effect Selector (lg:col-span-5) -->
+    <div class="space-y-6 lg:col-span-5">
+
+      <!-- Speed Control Card -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-navy-700/60">
+          <div class="flex items-center gap-2">
+            <i data-lucide="gauge" class="w-4 h-4 text-accent"></i>
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Animation Speed</h3>
+          </div>
+          <!-- Live Value Badge -->
+          <span class="font-mono text-sm px-2.5 py-1 rounded-md bg-navy-900 border border-navy-700 text-accent font-bold">
+            <span id="speed-value-display"><%= (device && device.speedMs) || 150 %></span> ms
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-5">
+          Controls the delay between animation frames on the ESP32. Range: 20 ms (ultra-fast) to 2000 ms (ambient slow).
+        </p>
+
+        <!-- Slider Range -->
+        <div class="space-y-3">
+          <input 
+            type="range" 
+            id="speed-range-slider" 
+            min="20" 
+            max="2000" 
+            step="10" 
+            value="<%= (device && device.speedMs) || 150 %>"
+            class="w-full h-2.5 bg-navy-950 rounded-lg appearance-none cursor-pointer accent-sky-400 focus:outline-none"
+          >
+          <div class="flex justify-between text-[11px] font-mono text-slate-500">
+            <span>20 ms (Fast)</span>
+            <span>500 ms</span>
+            <span>1000 ms</span>
+            <span>2000 ms (Slow)</span>
+          </div>
+        </div>
+
+        <!-- Speed Quick Presets -->
+        <div class="mt-5 pt-4 border-t border-navy-700/60">
+          <span class="text-[11px] font-mono uppercase text-slate-400 block mb-2 font-semibold">Speed Presets</span>
+          <div class="grid grid-cols-4 gap-2">
+            <button data-speed-preset="50" class="btn-secondary py-1 px-2 text-xs font-mono">50ms</button>
+            <button data-speed-preset="150" class="btn-secondary py-1 px-2 text-xs font-mono">150ms</button>
+            <button data-speed-preset="400" class="btn-secondary py-1 px-2 text-xs font-mono">400ms</button>
+            <button data-speed-preset="1000" class="btn-secondary py-1 px-2 text-xs font-mono">1000ms</button>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <button id="apply-speed-btn" class="btn-primary w-full text-xs py-2.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            Commit Speed Setting
+          </button>
+        </div>
+      </div>
+
+      <!-- Direct Effect Selector (1-50 Dropdown / Quick Pick) -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-navy-700/60">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-secondary"></i>
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Direct Effect Jump (1–50)</h3>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">50 Stored</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-4">
+          Select any of the 50 predefined firmware lighting patterns to dispatch immediately.
+        </p>
+
+        <div class="space-y-4">
+          <!-- Dropdown Select -->
+          <div>
+            <label for="effect-select-dropdown" class="block text-xs font-mono text-slate-400 mb-1.5 uppercase">
+              Choose Predefined Effect
+            </label>
+            <select 
+              id="effect-select-dropdown" 
+              class="w-full bg-navy-950 border border-navy-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-accent transition-colors cursor-pointer"
+            >
+              <% effects.forEach(eff => { %>
+                <option value="<%= eff.id %>" <%= (device && device.currentEffectId === eff.id) ? 'selected' : '' %>>
+                  #<%= eff.id %> — <%= eff.name %> (<%= eff.category %>)
+                </option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Selected Effect Details Preview Card -->
+          <div id="selected-effect-card" class="p-4 rounded-xl bg-navy-950/80 border border-navy-700/70 space-y-2">
+            <div class="flex items-center justify-between">
+              <span id="selected-eff-title" class="text-sm font-bold text-white">#1 Forward Chase</span>
+              <span id="selected-eff-category" class="badge badge-info text-[10px]">Chase</span>
+            </div>
+            <p id="selected-eff-desc" class="text-xs text-slate-400 leading-relaxed">
+              Sequentially activates LEDs from left to right (LED 1 to LED 5).
+            </p>
+          </div>
+
+          <!-- Submit Button -->
+          <button id="dispatch-effect-btn" class="btn-purple w-full py-2.5 text-xs font-semibold">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            Dispatch Effect Command
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

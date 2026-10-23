@@ -1,0 +1,22 @@
+<!-- Toast Notification Container -->
+<div 
+  id="toast-container" 
+  class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+  aria-live="polite"
+>
+  <!-- Dynamically injected toasts appear here -->
+</div>
+
+<template id="toast-template">
+  <div class="toast-item pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300 rounded-xl p-4 shadow-xl border flex items-start gap-3 bg-navy-800 border-navy-700 text-slate-100">
+    <div class="toast-icon flex-shrink-0 mt-0.5"></div>
+    <div class="flex-1 min-w-0">
+      <h4 class="toast-title text-sm font-semibold"></h4>
+      <p class="toast-message text-xs text-slate-300 mt-0.5 break-words"></p>
+      <div class="toast-meta text-[11px] font-mono text-slate-400 mt-1 hidden"></div>
+    </div>
+    <button class="toast-close text-slate-400 hover:text-white transition-colors ml-1 p-1">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+</template>

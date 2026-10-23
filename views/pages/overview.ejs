@@ -1,0 +1,304 @@
+<div class="space-y-6">
+  <!-- Page Header & Action Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">Overview Dashboard</h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">Real-time status, 5-LED hardware bus telemetry, and command dispatch</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <a href="/controller" class="btn-primary text-xs">
+        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        Open Controller
+      </a>
+      <button id="refresh-dashboard-btn" class="btn-secondary text-xs" title="Refresh Live State">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Telemetry Warning / Demo Alert if Simulated or Offline -->
+  <% if (device && device.isSimulated) { %>
+    <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-800/60 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-cyan-300">
+        <i data-lucide="info" class="w-5 h-5 flex-shrink-0 text-accent"></i>
+        <div class="text-xs leading-relaxed">
+          <span class="font-semibold text-white">Virtual ESP32 Simulator Active (Demo Mode):</span>
+          The dashboard is currently interacting with an in-memory virtual microcontroller simulating GPIO 16, 17, 18, 19, 21. Real hardware status is paused.
+        </div>
+      </div>
+      <button id="stop-sim-btn" class="btn-secondary text-xs py-1.5 px-3 flex-shrink-0 text-cyan-200 border-cyan-700/50 hover:bg-cyan-900/30">
+        Stop Demo
+      </button>
+    </div>
+  <% } else if (device && !device.isOnline) { %>
+    <div class="p-4 rounded-xl bg-amber-950/30 border border-amber-800/50 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-amber-300">
+        <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 text-amber-400"></i>
+        <div class="text-xs leading-relaxed">
+          <span class="font-semibold text-white">Device Offline:</span>
+          No HTTP poll or acknowledgement received from ESP32 within the last <%= offlineThresholdSeconds %> seconds.
+          Lighting animations continue running autonomously on the microcontroller. Queued commands will expire after <%= device.commandTimeoutSeconds %>s if device remains disconnected.
+        </div>
+      </div>
+      <button id="start-sim-btn" class="btn-primary text-xs py-1.5 px-3 flex-shrink-0">
+        Launch Demo Simulator
+      </button>
+    </div>
+  <% } %>
+
+  <!-- Summary Metric Cards (6 Cards) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    
+    <!-- 1. Device Status -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Device Status</span>
+        <i data-lucide="activity" class="w-4 h-4 text-accent"></i>
+      </div>
+      <div>
+        <div class="text-lg font-bold flex items-center gap-2 text-white">
+          <span class="w-2.5 h-2.5 rounded-full <%= (device && (device.isOnline || device.isSimulated)) ? 'bg-emerald-400 shadow-glow-green animate-pulse' : 'bg-rose-500' %>"></span>
+          <span id="metric-device-status"><%= (device && device.statusLabel) || 'Offline' %></span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">
+          <% if (device && device.isSimulated) { %>
+            Virtual Node
+          <% } else if (device && device.lastSeenSecondsAgo !== null) { %>
+            Seen <%= device.lastSeenSecondsAgo %>s ago
+          <% } else { %>
+            Never connected
+          <% } %>
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. Wi-Fi Status -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Wi-Fi Bus</span>
+        <i data-lucide="wifi" class="w-4 h-4 text-emerald-400"></i>
+      </div>
+      <div>
+        <div class="text-lg font-bold text-white flex items-center gap-1.5">
+          <span id="metric-wifi-status"><%= (device && device.wifiStatus) || 'Disconnected' %></span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">802.11 b/g/n Station</p>
+      </div>
+    </div>
+
+    <!-- 3. Current Effect -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Active Effect</span>
+        <i data-lucide="sparkles" class="w-4 h-4 text-secondary"></i>
+      </div>
+      <div>
+        <div class="text-lg font-bold text-accent truncate" title="<%= device ? device.currentEffectName : '' %>">
+          #<span id="metric-effect-id"><%= (device && device.currentEffectId) || 1 %></span>
+          <span id="metric-effect-name" class="text-sm font-semibold text-slate-200 ml-1"><%= (device && device.currentEffectName) || 'Forward Chase' %></span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">50 Presets Stored in ROM</p>
+      </div>
+    </div>
+
+    <!-- 4. Animation Speed -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Speed Interval</span>
+        <i data-lucide="gauge" class="w-4 h-4 text-amber-400"></i>
+      </div>
+      <div>
+        <div class="text-lg font-bold text-white font-mono">
+          <span id="metric-speed"><%= (device && device.speedMs) || 150 %></span> <span class="text-xs font-normal text-slate-400">ms</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">Frame Step Clock</p>
+      </div>
+    </div>
+
+    <!-- 5. Automatic Mode -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Auto Cycling</span>
+        <i data-lucide="repeat" class="w-4 h-4 text-cyan-400"></i>
+      </div>
+      <div>
+        <div class="text-lg font-bold <%= (device && device.autoMode) ? 'text-emerald-400' : 'text-slate-400' %>">
+          <span id="metric-auto-mode"><%= (device && device.autoMode) ? 'Enabled' : 'Disabled' %></span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1"><%= (device && device.autoIntervalSeconds) || 10 %>s interval</p>
+      </div>
+    </div>
+
+    <!-- 6. Last Communication -->
+    <div class="card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-medium uppercase tracking-wider">Last Comm</span>
+        <i data-lucide="radio-tower" class="w-4 h-4 text-purple-400"></i>
+      </div>
+      <div>
+        <div class="text-sm font-bold text-white font-mono truncate" id="metric-last-comm">
+          <%= (device && device.lastCommunicationTime) ? new Date(device.lastCommunicationTime).toLocaleTimeString() : 'Standby' %>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">HTTP Polling: 1000ms</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Visual 5-LED Indicator Partial -->
+  <%- include('../partials/ledIndicator') %>
+
+  <!-- Middle Grid: Command Quick Actions & Activity Telemetry Chart -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Quick Controls Card (1 col) -->
+    <div class="card p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-navy-700/60">
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="zap" class="w-4 h-4 text-accent"></i>
+            Quick Command Actions
+          </h3>
+          <span class="text-[11px] font-mono text-slate-400">Direct Bus</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-4">
+          Send immediate commands to the device queue. Real-time updates reflect upon device poll.
+        </p>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button data-quick-cmd="on" class="btn-secondary text-xs py-2 w-full justify-center hover:border-amber-400/50 hover:text-amber-300">
+            <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i> All ON
+          </button>
+          <button data-quick-cmd="off" class="btn-secondary text-xs py-2 w-full justify-center hover:border-rose-400/50 hover:text-rose-300">
+            <i data-lucide="moon" class="w-3.5 h-3.5 text-slate-400"></i> All OFF
+          </button>
+          <button data-quick-cmd="previous" class="btn-secondary text-xs py-2 w-full justify-center hover:border-sky-400/50">
+            <i data-lucide="chevron-left" class="w-3.5 h-3.5 text-accent"></i> Prev Effect
+          </button>
+          <button data-quick-cmd="next" class="btn-secondary text-xs py-2 w-full justify-center hover:border-sky-400/50">
+            <span>Next Effect</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-accent"></i>
+          </button>
+          <button data-quick-cmd="reset" class="btn-secondary text-xs py-2 w-full justify-center hover:border-rose-400/50 hover:text-rose-300">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-rose-400"></i> Reset #1
+          </button>
+          <button data-quick-cmd="lock" class="btn-secondary text-xs py-2 w-full justify-center hover:border-purple-400/50 hover:text-purple-300">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-purple-400"></i> Lock Pattern
+          </button>
+          <button data-quick-cmd="unlock" class="btn-secondary text-xs py-2 w-full justify-center hover:border-accent/50 hover:text-accent">
+            <i data-lucide="unlock" class="w-3.5 h-3.5 text-accent"></i> Unlock
+          </button>
+          <button data-quick-cmd="automode" id="quick-auto-btn" class="btn-secondary text-xs py-2 w-full justify-center hover:border-emerald-400/50 hover:text-emerald-300">
+            <i data-lucide="play-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span id="quick-auto-label"><%= (device && device.autoMode) ? 'Auto: ON' : 'Auto: OFF' %></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-navy-700/60 flex items-center justify-between text-xs text-slate-400">
+        <span>Delivery Policy:</span>
+        <span class="font-mono text-emerald-400">No duplicates &bull; Expirable</span>
+      </div>
+    </div>
+
+    <!-- Activity / Telemetry Chart (2 cols) -->
+    <div class="card p-5 lg:col-span-2">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-navy-700/60">
+        <div class="flex items-center gap-2">
+          <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i>
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Device Activity & Command Distribution</h3>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-accent"></span> Acknowledged</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span> Speed (ms)</span>
+        </div>
+      </div>
+
+      <div class="h-56 relative w-full">
+        <canvas id="overviewActivityChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Command Activity Table -->
+  <div class="card p-5">
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-navy-700/60">
+      <div class="flex items-center gap-2">
+        <i data-lucide="history" class="w-4 h-4 text-accent"></i>
+        <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Recent Command Activity</h3>
+      </div>
+      <a href="/history" class="text-xs text-accent hover:underline flex items-center gap-1">
+        View All History <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="text-[11px] font-mono uppercase bg-navy-900/60 text-slate-400 border-b border-navy-700/70">
+          <tr>
+            <th class="py-2.5 px-3">Command ID</th>
+            <th class="py-2.5 px-3">Command</th>
+            <th class="py-2.5 px-3">Value</th>
+            <th class="py-2.5 px-3">Timestamp</th>
+            <th class="py-2.5 px-3">Delivery Lifecycle Status</th>
+          </tr>
+        </thead>
+        <tbody id="recent-commands-tbody" class="divide-y divide-navy-700/40 font-mono">
+          <% if (recentCommands && recentCommands.length > 0) { %>
+            <% recentCommands.forEach(cmd => { %>
+              <tr class="hover:bg-navy-750/30 transition-colors">
+                <td class="py-3 px-3 text-slate-400 font-mono text-[11px] truncate max-w-[130px]" title="<%= cmd.id %>">
+                  <%= cmd.id %>
+                </td>
+                <td class="py-3 px-3 font-semibold text-white">
+                  <span class="px-2 py-0.5 rounded bg-navy-900 border border-navy-700 text-accent font-sans text-xs">
+                    <%= cmd.command %>
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-slate-300">
+                  <%= cmd.value !== null ? cmd.value : '—' %>
+                </td>
+                <td class="py-3 px-3 text-slate-400 text-[11px]">
+                  <%= new Date(cmd.created_at).toLocaleTimeString() %>
+                </td>
+                <td class="py-3 px-3">
+                  <% if (cmd.status === 'acknowledged') { %>
+                    <span class="badge badge-success text-[11px]">
+                      <i data-lucide="check-check" class="w-3 h-3"></i> Executed & Acked
+                    </span>
+                  <% } else if (cmd.status === 'delivered') { %>
+                    <span class="badge badge-info text-[11px]">
+                      <i data-lucide="radio" class="w-3 h-3"></i> Delivered (Awaiting Ack)
+                    </span>
+                  <% } else if (cmd.status === 'pending') { %>
+                    <span class="badge badge-warning text-[11px]">
+                      <i data-lucide="clock" class="w-3 h-3"></i> Submitted (In Queue)
+                    </span>
+                  <% } else if (cmd.status === 'expired') { %>
+                    <span class="badge badge-neutral text-[11px] text-slate-400">
+                      <i data-lucide="hourglass" class="w-3 h-3"></i> Expired (Device Offline)
+                    </span>
+                  <% } else { %>
+                    <span class="badge badge-error text-[11px]">
+                      <i data-lucide="alert-circle" class="w-3 h-3"></i> <%= cmd.status %>
+                    </span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="py-6 text-center text-slate-500 font-sans text-xs">
+                No recent commands recorded in SQLite queue. Submit a command above to begin.
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

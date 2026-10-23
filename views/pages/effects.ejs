@@ -1,0 +1,142 @@
+<div class="space-y-6">
+  <!-- Page Header & Filter Tools -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">Effects Library</h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">Browse, inspect, and select all 50 predefined ESP32 lighting animations</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-mono px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-700 text-slate-300">
+        Total Library: <strong class="text-accent">50 Effects</strong>
+      </span>
+    </div>
+  </div>
+
+  <!-- Search and Category Filter Bar -->
+  <div class="card p-4 space-y-3">
+    <div class="flex flex-col md:flex-row items-center gap-3">
+      <!-- Search Input -->
+      <div class="relative flex-1 w-full">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input 
+          type="text" 
+          id="effect-search-input" 
+          placeholder="Search effects by name, number, or keyword (e.g. 'Knight Rider', 'Pulse', '24')..." 
+          class="w-full bg-navy-950 border border-navy-700 rounded-lg pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-accent transition-colors"
+        >
+      </div>
+
+      <!-- Quick Reset Filters -->
+      <button id="reset-effect-filters" class="btn-secondary text-xs py-2 px-3 whitespace-nowrap">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Clear Filter
+      </button>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs" id="category-pills-container">
+      <% categories.forEach(cat => { %>
+        <button 
+          data-category="<%= cat %>" 
+          class="category-filter-pill px-3 py-1.5 rounded-lg border font-medium whitespace-nowrap transition-all duration-150 <%= cat === 'All' ? 'bg-accent/15 text-accent border-accent/40 font-semibold shadow-sm' : 'bg-navy-900 text-slate-400 border-navy-700 hover:text-slate-200 hover:bg-navy-850' %>"
+        >
+          <%= cat %>
+        </button>
+      <% }); %>
+    </div>
+  </div>
+
+  <!-- Grid of 50 Effect Cards -->
+  <div id="effects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <% effects.forEach(eff => { 
+      const isCurrent = device && device.currentEffectId === eff.id;
+      const initialFrame = eff.frames && eff.frames.length > 0 ? eff.frames[0] : [0, 0, 0, 0, 0];
+    %>
+      <div 
+        class="card card-hover p-4 flex flex-col justify-between effect-card transition-all duration-200 <%= isCurrent ? 'border-accent shadow-glow-cyan ring-1 ring-accent' : '' %>"
+        data-effect-id="<%= eff.id %>"
+        data-effect-name="<%= eff.name.toLowerCase() %>"
+        data-effect-category="<%= eff.category %>"
+      >
+        <div>
+          <!-- Card Header: Number & Category -->
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-navy-950 border border-navy-700 text-accent">
+              #<%= eff.id %>
+            </span>
+            <span class="badge badge-info text-[10px] py-0.5">
+              <%= eff.category %>
+            </span>
+          </div>
+
+          <!-- Effect Name -->
+          <h3 class="text-sm font-bold text-white mb-1.5 flex items-center justify-between">
+            <span><%= eff.name %></span>
+            <% if (isCurrent) { %>
+              <span class="text-[10px] font-mono font-semibold text-emerald-400 flex items-center gap-1 active-indicator-badge">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active
+              </span>
+            <% } %>
+          </h3>
+
+          <!-- Description -->
+          <p class="text-xs text-slate-400 leading-relaxed min-h-[36px] mb-3">
+            <%= eff.description %>
+          </p>
+
+          <!-- 5-LED Visual Representation Box (Simulated CSS Preview) -->
+          <div class="bg-navy-950/90 rounded-lg p-2.5 border border-navy-700/60 mb-4">
+            <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 mb-2 px-1">
+              <span>Preview (Simulated)</span>
+              <span>GPIO 16–21</span>
+            </div>
+
+            <!-- 5 Dots Preview -->
+            <div class="flex items-center justify-center gap-3 py-1">
+              <% [1, 2, 3, 4, 5].forEach((n, idx) => { 
+                const dotOn = initialFrame[idx] === 1;
+              %>
+                <div 
+                  class="led-preview-dot <%= dotOn ? 'on' : '' %>" 
+                  data-preview-led="<%= n %>"
+                  title="LED <%= n %>"
+                ></div>
+              <% }); %>
+            </div>
+            
+            <div class="text-[9px] text-center text-slate-500 mt-1.5 font-mono">
+              Visual Representation &bull; Not Live Telemetry
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div>
+          <button 
+            data-select-effect="<%= eff.id %>" 
+            data-effect-title="<%= eff.name %>" 
+            class="btn-primary w-full text-xs py-2 <%= isCurrent ? 'bg-navy-700 text-slate-300 border border-navy-600 shadow-none' : '' %>"
+          >
+            <i data-lucide="<%= isCurrent ? 'check' : 'play' %>" class="w-3.5 h-3.5"></i>
+            <span><%= isCurrent ? 'Currently Active' : 'Select Effect' %></span>
+          </button>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+
+  <!-- Empty State (when search filters match nothing) -->
+  <div id="no-effects-match" class="card p-12 text-center hidden">
+    <div class="w-12 h-12 rounded-xl bg-navy-900 border border-navy-700 flex items-center justify-center text-slate-400 mx-auto mb-3">
+      <i data-lucide="filter-x" class="w-6 h-6"></i>
+    </div>
+    <h3 class="text-base font-semibold text-white">No Matching Lighting Effects</h3>
+    <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+      No effects found matching your search or category filter. Try clearing your filters.
+    </p>
+    <button id="clear-search-btn" class="btn-secondary text-xs mt-4">
+      Reset All Filters
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,39 @@
+<!-- Confirmation Dialog Modal -->
+<div 
+  id="confirm-modal" 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="confirm-modal-title"
+>
+  <div class="card max-w-md w-full p-6 transform scale-95 transition-transform duration-200 border-navy-700 bg-navy-800 shadow-2xl">
+    <div class="flex items-start gap-4">
+      <div id="confirm-modal-icon-container" class="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <div class="flex-1">
+        <h3 id="confirm-modal-title" class="text-base font-semibold text-white">Confirm Action</h3>
+        <p id="confirm-modal-message" class="text-xs text-slate-300 mt-2 leading-relaxed">
+          Are you sure you want to perform this operation?
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-end gap-3">
+      <button 
+        id="confirm-modal-cancel" 
+        type="button" 
+        class="btn-secondary text-xs px-4 py-2"
+      >
+        Cancel
+      </button>
+      <button 
+        id="confirm-modal-proceed" 
+        type="button" 
+        class="btn-primary text-xs px-4 py-2"
+      >
+        Proceed
+      </button>
+    </div>
+  </div>
+</div>

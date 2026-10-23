@@ -1,0 +1,16 @@
+<div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+  <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-4 shadow-lg">
+    <i data-lucide="alert-octagon" class="w-8 h-8"></i>
+  </div>
+  <h1 class="text-3xl font-bold tracking-tight text-white mb-2">500 - Server Exception</h1>
+  <p class="text-sm text-slate-400 max-w-md mb-6">
+    <%= typeof message !== 'undefined' ? message : 'An internal error occurred while processing your request.' %>
+  </p>
+  <% if (typeof error !== 'undefined' && error && error.stack) { %>
+    <pre class="max-w-2xl w-full p-4 rounded-xl bg-navy-950 border border-navy-800 text-left text-xs font-mono text-rose-300 overflow-x-auto mb-6"><%= error.stack %></pre>
+  <% } %>
+  <a href="/" class="btn-primary">
+    <i data-lucide="home" class="w-4 h-4"></i>
+    Return to Dashboard
+  </a>
+</div>
